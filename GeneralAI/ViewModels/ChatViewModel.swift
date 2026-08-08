@@ -54,6 +54,9 @@ final class ChatViewModel {
             let response = try await session.respond(to: trimmed)
             reply = response.content
             messages.append(ChatMessage(role: .assistant, content: reply ?? ""))
+        } catch let error as LanguageModelSession.GenerationError {
+            reply = nil
+            errorMessage = Self.message(for: error)
         } catch {
             reply = nil
             errorMessage = error.localizedDescription
@@ -67,5 +70,20 @@ final class ChatViewModel {
         messages.removeAll()
         errorMessage = nil
         isResponding = false
+    }
+
+    private static func message(for error: LanguageModelSession.GenerationError) -> String {
+        switch error {
+        case .assetsUnavailable:
+            return "The on-device Apple Foundation Model isn't available here. This usually means you're running in the Simulator. Run the app on a real device (iPhone 15 Pro or later, iOS 26+) with Apple Intelligence enabled."
+        case .exceededContextWindowSize:
+            return "Your question was too long. Try making it shorter."
+        case .rateLimited:
+            return "Too many requests in a row. Wait a moment and try again."
+        case .refusal:
+            return "The model declined to answer this question."
+        default:
+            return error.localizedDescription
+        }
     }
 }
