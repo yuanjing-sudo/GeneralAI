@@ -9,7 +9,7 @@ final class ChatViewModel {
     private(set) var isResponding = false
     private(set) var errorMessage: String?
 
-    private let model = SystemLanguageModel.default
+    private let model = SystemLanguageModel(useCase: .general, guardrails: .permissiveContentTransformations)
     private let session: LanguageModelSession
 
     init() {
@@ -59,6 +59,7 @@ final class ChatViewModel {
             errorMessage = Self.message(for: error)
         } catch {
             reply = nil
+            print(error)
             errorMessage = error.localizedDescription
         }
 
